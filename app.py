@@ -28,6 +28,12 @@ st.caption(
     "Detect cabbages from UAV imagery using YOLOv8. "
     "Select an image from the gallery or upload your own."
 )
+st.markdown(
+    "<div style='font-size:0.78rem; color:#888; margin-top:-8px;'>"
+    "Created by Osamu Watanabe, Weed Lab, Shinshu University."
+    "</div>",
+    unsafe_allow_html=True,
+)
 st.markdown("---")
 
 # =========================
