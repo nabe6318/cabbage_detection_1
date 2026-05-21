@@ -11,15 +11,24 @@ from ultralytics import YOLO
 # Page config
 # =========================
 st.set_page_config(
-    page_title="Cabbage Detection App",
+    page_title="AI-Based Cabbage Detection | Tradi-Smart Shinshu",
     layout="wide"
 )
 
-st.title("🥬 Cabbage Detection App")
+st.markdown("""
+<div style="font-size:0.85rem; color:#555; line-height:1.6; margin-bottom:0.5rem;">
+    <span style="color:#c0392b; font-weight:600;">Tradi-Smart Shinshu Program</span><br>
+    1<sup>st</sup> day 2026/06/04 &nbsp;&middot;&nbsp; AI-Based Cabbage Detection
+</div>
+""", unsafe_allow_html=True)
+
+st.title("Cabbage detection demo using an AI model")
+st.subheader("Where are the cabbages ready for harvest?")
 st.caption(
     "Detect cabbages from UAV imagery using YOLOv8. "
     "Select an image from the gallery or upload your own."
 )
+st.markdown("---")
 
 # =========================
 # Model path
@@ -80,8 +89,8 @@ if "selected_gallery_path" not in st.session_state:
 # Gallery section
 # =========================
 if gallery_images:
-    st.markdown("### 📂 画像ギャラリー（クリックで選択）")
-    st.caption(f"{GALLERY_DIR} フォルダ内の画像: {len(gallery_images)} 枚　／　スクロールで全画像を表示")
+    st.markdown("### 📂 Image Gallery (click to select)")
+    st.caption(f"{GALLERY_DIR} — {len(gallery_images)} images available. Scroll to see all.")
 
     THUMB_COLS = 7
     THUMB_SIZE = (160, 160)
@@ -117,14 +126,14 @@ if gallery_images:
     st.markdown("---")
 else:
     st.info(
-        f"ギャラリーフォルダ `{GALLERY_DIR}` が見つかりません。"
-        "フォルダを作成して画像を入れると、ここにサムネイルが表示されます。"
+        f"Gallery folder `{GALLERY_DIR}` not found. "
+        "Create the folder and add images to display thumbnails here."
     )
 
 # =========================
 # Image source selection
 # =========================
-st.markdown("### 🖼️ 検出する画像を選択")
+st.markdown("### 🖼️ Select image for detection")
 
 # Determine default tab based on session state
 if st.session_state["selected_gallery_path"]:
@@ -132,7 +141,7 @@ if st.session_state["selected_gallery_path"]:
 else:
     default_tab = 1  # Upload tab
 
-tab_gallery, tab_upload = st.tabs(["📂 ギャラリーから選択", "📤 画像をアップロード"])
+tab_gallery, tab_upload = st.tabs(["📂 Select from gallery", "📤 Upload image"])
 
 selected_image: Image.Image | None = None
 selected_name: str = ""
@@ -140,7 +149,7 @@ selected_name: str = ""
 with tab_gallery:
     if st.session_state["selected_gallery_path"]:
         p = Path(st.session_state["selected_gallery_path"])
-        st.success(f"選択中: **{p.name}**")
+        st.success(f"Selected: **{p.name}**")
         try:
             selected_image = Image.open(p).convert("RGB")
             selected_name = p.stem
@@ -149,10 +158,10 @@ with tab_gallery:
             with preview_col:
                 st.image(selected_image, caption=p.name, use_container_width=True)
         except Exception as e:
-            st.error(f"画像を読み込めません: {e}")
+            st.error(f"Could not load image: {e}")
             selected_image = None
     else:
-        st.info("上のギャラリーから画像をクリックして選択してください。")
+        st.info("Click an image in the gallery above to select it.")
 
 with tab_upload:
     uploaded_file = st.file_uploader(
@@ -172,14 +181,14 @@ with tab_upload:
 # Guard: no image selected
 # =========================
 if selected_image is None:
-    st.info("ギャラリーから画像を選択するか、画像をアップロードしてください。")
+    st.info("Select an image from the gallery or upload one to continue.")
     st.stop()
 
 # =========================
 # Run detection button
 # =========================
 st.markdown("---")
-run_detection = st.button("▶️ 検出を実行", type="primary", use_container_width=True)
+run_detection = st.button("▶️ Run detection", type="primary", use_container_width=True)
 
 if not run_detection:
     st.stop()
@@ -189,7 +198,7 @@ if not run_detection:
 # =========================
 image_np = np.array(selected_image)
 height, width = image_np.shape[:2]
-st.write(f"画像サイズ: {width} × {height} px")
+st.write(f"Image size: {width} × {height} px")
 
 with st.spinner("Detecting with YOLO..."):
     results = model.predict(
