@@ -81,55 +81,38 @@ if "selected_gallery_path" not in st.session_state:
 # =========================
 if gallery_images:
     st.markdown("### 📂 画像ギャラリー（クリックで選択）")
-    st.caption(f"{GALLERY_DIR} フォルダ内の画像: {len(gallery_images)} 枚")
+    st.caption(f"{GALLERY_DIR} フォルダ内の画像: {len(gallery_images)} 枚　／　スクロールで全画像を表示")
 
-    # Number of columns for the thumbnail grid
     THUMB_COLS = 7
-    THUMB_SIZE = (160, 160)  # px for display
+    THUMB_SIZE = (160, 160)
 
     rows = [gallery_images[i:i + THUMB_COLS]
             for i in range(0, len(gallery_images), THUMB_COLS)]
 
-    for row in rows:
-        cols = st.columns(len(row))
-        for col, img_path in zip(cols, row):
-            with col:
-                # Load thumbnail
-                try:
-                    thumb = Image.open(img_path).convert("RGB")
-                    thumb.thumbnail(THUMB_SIZE, Image.LANCZOS)
-                except Exception:
-                    st.warning(img_path.name)
-                    continue
+    # Fixed-height scrollable area (shows ~2 rows, scroll for the rest)
+    with st.container(height=380, border=True):
+        for row in rows:
+            cols = st.columns(len(row))
+            for col, img_path in zip(cols, row):
+                with col:
+                    try:
+                        thumb = Image.open(img_path).convert("RGB")
+                        thumb.thumbnail(THUMB_SIZE, Image.LANCZOS)
+                    except Exception:
+                        st.warning(img_path.name)
+                        continue
 
-                # Highlight selected image with a green border
-                is_selected = (
-                    st.session_state["selected_gallery_path"] == str(img_path)
-                )
-                border_color = "#2ecc40" if is_selected else "#444"
-                border_width = 3 if is_selected else 1
+                    is_selected = (
+                        st.session_state["selected_gallery_path"] == str(img_path)
+                    )
 
-                # Wrap thumbnail in a styled container
-                st.markdown(
-                    f"""
-                    <div style="
-                        border: {border_width}px solid {border_color};
-                        border-radius: 6px;
-                        padding: 2px;
-                        margin-bottom: 2px;
-                        text-align: center;
-                    ">
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                st.image(thumb, use_container_width=True)
+                    st.image(thumb, use_container_width=True)
 
-                # Button underneath each thumbnail
-                btn_label = f"{'✅ ' if is_selected else ''}{img_path.stem}"
-                if st.button(btn_label, key=f"btn_{img_path.stem}", use_container_width=True):
-                    st.session_state["selected_gallery_path"] = str(img_path)
-                    st.rerun()
+                    btn_label = f"{'✅ ' if is_selected else ''}{img_path.stem}"
+                    if st.button(btn_label, key=f"btn_{img_path.stem}",
+                                 use_container_width=True):
+                        st.session_state["selected_gallery_path"] = str(img_path)
+                        st.rerun()
 
     st.markdown("---")
 else:
